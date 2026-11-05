@@ -1,6 +1,5 @@
-
 import express from "express";
-import type { Request, Response } from "express";
+import type {Request, Response} from "express";
 
 export interface Aluno {
     id: number;
@@ -16,41 +15,92 @@ const alunos: Aluno[] = [
     { id: 2, name: "Mariana Oliveira" }
 ];
 
+// Buscar aluno pelo ID
 function buscaAluno(id: string | number): number {
     return alunos.findIndex(aluno => aluno.id === Number(id));
 }
 
-// GET - Página inicial
+// GET - página inicial
 app.get("/", (req: Request, res: Response) => {
-    res.status(200).send("MovePlus funcionando!!");
+    return res.status(200).send("MovePlus funcionando!!");
 });
 
-// GET - Listar alunos
+// GET - listar alunos
 app.get("/alunos", (req: Request, res: Response) => {
-    res.status(200).json(alunos);
+    return res.status(200).json(alunos);
 });
 
-// POST - Cadastrar aluno
+// GET - buscar um único aluno pelo ID
+app.get("/alunos/:id", (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+
+    // Valida se o ID é um número inteiro válido
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            mensagem: "ID inválido"
+        });
+    }
+
+    const indice = buscaAluno(id);
+
+    // Se não encontrar o aluno, retorna 404
+    if (indice === -1) {
+        return res.status(404).json({
+            mensagem: "Aluno não encontrado"
+        });
+    }
+
+    // Retorna apenas o aluno encontrado
+    return res.status(200).json(alunos[indice]);
+});
+
+// POST - cadastrar aluno
 app.post("/alunos", (req: Request, res: Response) => {
     const { id, name } = req.body;
 
+    if (id === undefined || name === undefined || !String(name).trim()) {
+        return res.status(400).json({
+            mensagem: "ID e nome são obrigatórios"
+        });
+    }
+
+    const idNumerico = Number(id);
+
+    if (!Number.isInteger(idNumerico) || idNumerico <= 0) {
+        return res.status(400).json({
+            mensagem: "ID inválido"
+        });
+    }
+
+    if (buscaAluno(idNumerico) !== -1) {
+        return res.status(409).json({
+            mensagem: "Já existe um aluno com esse ID"
+        });
+    }
+
     const novoAluno: Aluno = {
-        id: Number(id),
-        name
+        id: idNumerico,
+        name: String(name).trim()
     };
 
     alunos.push(novoAluno);
 
-    res.status(201).json({
+    return res.status(201).json({
         mensagem: "Aluno cadastrado com sucesso",
         aluno: novoAluno
     });
 });
 
-// PUT - Atualizar aluno completamente
+// PUT - atualizar aluno completamente
 app.put("/alunos/:id", (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const indice = buscaAluno(id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            mensagem: "ID inválido"
+        });
+    }
 
     if (indice === -1) {
         return res.status(404).json({
@@ -60,20 +110,33 @@ app.put("/alunos/:id", (req: Request, res: Response) => {
 
     const { name } = req.body;
 
+    if (typeof name !== "string" || !name.trim()) {
+        return res.status(400).json({
+            mensagem: "O campo name é obrigatório"
+        });
+    }
+
     alunos[indice] = {
-        id: id,
-        name
+        id,
+        name: name.trim()
     };
 
-    res.status(200).json({
+    return res.status(200).json({
         mensagem: "Aluno atualizado completamente",
         aluno: alunos[indice]
     });
 });
 
-// PATCH - Atualizar aluno parcialmente
+// PATCH - atualizar aluno parcialmente
 app.patch("/alunos/:id", (req: Request, res: Response) => {
     const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            mensagem: "ID inválido"
+        });
+    }
+
     const indice = buscaAluno(id);
 
     if (indice === -1) {
@@ -82,19 +145,40 @@ app.patch("/alunos/:id", (req: Request, res: Response) => {
         });
     }
 
-    const { name } = req.body;
+    const name: unknown = req.body?.name;
 
-    alunos[indice].name = name;
+    if (typeof name !== "string" || name.trim() === "") {
+        return res.status(400).json({
+            mensagem: "Informe um nome válido"
+        });
+    }
 
-    res.status(200).json({
+    const aluno = alunos[indice];
+
+    if (!aluno) {
+        return res.status(404).json({
+            mensagem: "Aluno não encontrado"
+        });
+    }
+
+    aluno.name = name.trim();
+
+    return res.status(200).json({
         mensagem: "Aluno atualizado parcialmente",
-        aluno: alunos[indice]
+        aluno
     });
 });
 
-// DELETE - Excluir aluno
+// DELETE - excluir aluno
 app.delete("/alunos/:id", (req: Request, res: Response) => {
     const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            mensagem: "ID inválido"
+        });
+    }
+
     const indice = buscaAluno(id);
 
     if (indice === -1) {
@@ -103,11 +187,11 @@ app.delete("/alunos/:id", (req: Request, res: Response) => {
         });
     }
 
-    const alunoExcluido = alunos.splice(indice, 1);
+    const alunoExcluido = alunos.splice(indice, 1)[0];
 
-    res.status(200).json({
+    return res.status(200).json({
         mensagem: "Aluno excluído com sucesso",
-        aluno: alunoExcluido[0]
+        aluno: alunoExcluido
     });
 });
 

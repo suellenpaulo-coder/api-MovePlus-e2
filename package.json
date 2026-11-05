@@ -1,10 +1,10 @@
 {
   "name": "api-moveplus-e2",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
  "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "nodemon --exec tsx src/server.ts",
     "start": "tsx src/server.ts"
 },
   "repository": {
