@@ -13,7 +13,7 @@ import type { InferSchemaType } from "mongoose";
 // definicao de schema mapeado os campos 
 
 
-const AcademySchema: Schema = new Schema({
+const Academy Schema: Schema = new Schema({
     id: { type: Number, required: true },
     name: { type: String, required: true },
     plans: { type: String, required: true },

@@ -1,24 +1,24 @@
 import express from "express";
 import type {Request, Response} from "express";
 
-export interface Aluno {
-    id: number;
-    name: string;
-}
+// export interface Aluno {
+//     id: number;
+//     name: string;
+// }
 
 const app = express();
 
 app.use(express.json());
 
-const alunos: Aluno[] = [
-    { id: 1, name: "Lucas Santos" },
-    { id: 2, name: "Mariana Oliveira" }
-];
+// const alunos: Aluno[] = [
+//     { id: 1, name: "Lucas Santos" },
+//     { id: 2, name: "Mariana Oliveira" }
+// ];
 
 // Buscar aluno pelo ID
-function buscaAluno(id: string | number): number {
-    return alunos.findIndex(aluno => aluno.id === Number(id));
-}
+// function buscaAluno(id: string | number): number {
+//     return alunos.findIndex(aluno => aluno.id === Number(id));
+// }
 
 // GET - página inicial
 app.get("/", (req: Request, res: Response) => {
@@ -27,11 +27,25 @@ app.get("/", (req: Request, res: Response) => {
 
 // GET - listar alunos
 app.get("/alunos", (req: Request, res: Response) => {
+
+     try{
+        const listaAlunos = alunos.find({});
+        res.status(200).json(listaAlunos);
+
+     }catch (error){
+        res.status(500).json({ mensagem: "Erro ao buscar alunos"});
+
+     }
+
     return res.status(200).json(alunos);
 });
 
 // GET - buscar um único aluno pelo ID
 app.get("/alunos/:id", (req: Request, res: Response) => {
+
+     try{
+        const listaAlunos = Alunos.find({});
+     }
     const id = Number(req.params.id);
 
     // Valida se o ID é um número inteiro válido
