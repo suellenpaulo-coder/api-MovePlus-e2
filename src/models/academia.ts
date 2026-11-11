@@ -12,15 +12,26 @@ import type { InferSchemaType } from "mongoose";
 
 // definicao de schema mapeado os campos 
 
-const AlunoSchema: Schema = new Schema({
-    id: { type: Number, required: true},
-    name: { type: String, required: true},
-    plans: { type: String, required: true},
-    createdAt: { type: Date, required: true},
-    activities: { type: String, required: true},
-    phone: { type: String, required: true},
 
-  },
+const AcademySchema: Schema = new Schema({
+    id: { type: Number, required: true },
+    name: { type: String, required: true },
+    plans: { type: String, required: true },
+    createdAt: { type: Date, required: true },
+    activities: { type: String, required: true },
+    phone: { type: String, required: true },
+
+    // Additional properties
+    description: { type: String, required: true },
+    cnpj: { type: String, required: true },
+    email: { type: String, required: true },
+    address: { type: String, required: true },
+    openingHours: { type: String, required: true },
+    isActive: { type: Boolean, required: true },
+    modalities: { type: [String], required: true },
+    capacity: { type: Number, required: true },
+
+
   { versionKey: false}
 
 );
