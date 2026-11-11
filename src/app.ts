@@ -1,7 +1,7 @@
 import express from "express";
 import type {Request, Response} from "express";
 
-// export interface Aluno {
+//  export interface Aluno {
 //     id: number;
 //     name: string;
 // }
