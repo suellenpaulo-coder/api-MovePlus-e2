@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 async function conectaNaDatabase(): Promise<typeof mongoose.connection>{
 
-    const dbURI = process.env.DATABASE_URL;
+    const dbURI = process.env.DATABASE_URI;
 
     if(!dbURI){
         throw new Error("Variável não encontrada no arquivo .env",);

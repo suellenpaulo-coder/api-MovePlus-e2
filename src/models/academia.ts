@@ -42,7 +42,7 @@ const AcademySchema: Schema = new Schema({
 
   // criacao do model ( mongoose)
 
-    const Academia = mongoose.model(" Academias", AcademySchema);
+    const Academia = mongoose.model("Academia", AcademySchema);
 
 
 // disponibiliza o modulo para ser importado em outros arquivos

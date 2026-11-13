@@ -2,6 +2,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import Aluno from "./models/Aluno.js";
+import Academia from "./models/academia.js";
 
 const app = express();
 
@@ -187,6 +188,64 @@ app.delete("/alunos/:id", async (req: Request, res: Response) => {
         return res.status(500).json({
             mensagem: "Erro ao excluir aluno"
         });
+    }
+});
+
+// GET - listar todas as academias
+app.get("/academias", async (req: Request, res: Response) => {
+    try {
+        const academias = await Academia.find().sort({ id: 1 });
+        return res.status(200).json(academias);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensagem: "Erro ao buscar academias" });
+    }
+});
+
+// GET - buscar academia pelo ID
+app.get("/academias/:id", async (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ mensagem: "ID inválido" });
+    }
+
+    try {
+        const academia = await Academia.findOne({ id });
+
+        if (!academia) {
+            return res.status(404).json({ mensagem: "Academia não encontrada" });
+        }
+
+        return res.status(200).json(academia);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensagem: "erro ao buscar academia" });
+    }
+});
+
+// POST - cadastrar academia
+app.post("/academias", async (req: Request, res: Response) => {
+    const { id, name, plans, createdAt, activities, phone, description, cnpj, email, address, openingHours, isActive, modalities, capacity } = req.body;
+
+    try {
+        const existente = await Academia.findOne({ id });
+
+        if (existente) {
+            return res.status(409).json({ mensagem: "Já existe uma academia com esse ID" });
+        }
+
+        const novaAcademia = await Academia.create({
+            id, name, plans, createdAt, activities, phone, description, cnpj, email, address, openingHours, isActive, modalities, capacity
+        });
+
+        return res.status(201).json({
+            mensagem: "Academia cadastrada com sucesso",
+            academia: novaAcademia
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensagem: "Erro ao cadastrar academia" });
     }
 });
 

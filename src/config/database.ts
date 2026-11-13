@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 
 const conectarBanco = async (): Promise<void> => {
   try {
-    const uri = process.env.MONGODB_URI;
+    const uri = process.env.DATABASE_URI;
 
     if (!uri) {
-      throw new Error("MONGODB_URI não foi definida no arquivo .env");
+      throw new Error("DATABASE_URI não foi definida no arquivo .env");
     }
 
     await mongoose.connect(uri);
