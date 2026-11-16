@@ -3,69 +3,93 @@ import mongoose, { Schema } from "mongoose";
 import type { InferSchemaType } from "mongoose";
 
 const AcademySchema = new Schema(
-    {
-        id: {
-            type: Number,
-            required: true,
-            unique: true
-        },
-        name: {
-            type: String,
-            required: true
-        },
-        plans: {
-            type: String,
-            required: true
-        },
-        createdAt: {
-            type: Date,
-            required: true,
-            default: Date.now
-        },
-        activities: {
-            type: String,
-            required: true
-        },
-        phone: {
-            type: String,
-            required: true
-        },
-        description: {
-            type: String,
-            required: true
-        },
-        cnpj: {
-            type: String,
-            required: true
-        },
-        email: {
-            type: String,
-            required: true
-        },
-        address: {
-            type: String,
-            required: true
-        },
-        openingHours: {
-            type: String,
-            required: true
-        },
-        isActive: {
-            type: Boolean,
-            required: true
-        },
-        modalities: {
-            type: [String],
-            required: true
-        },
-        capacity: {
-            type: Number,
-            required: true
-        }
+  {
+    id: {
+      type: Number,
+      required: true,
+      unique: true
     },
-    {
-        versionKey: false
+
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    plans: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    createdAt: {
+      type: Date,
+      required: true,
+      default: Date.now
+    },
+
+    activities: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    description: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    cnpj: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    email: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    address: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    openingHours: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    isActive: {
+      type: Boolean,
+      required: true
+    },
+
+    modalities: {
+      type: [String],
+      required: true,
+      default: []
+    },
+
+    capacity: {
+      type: Number,
+      required: true,
+      min: 0
     }
+  },
+  {
+    versionKey: false
+  }
 );
 
 export type IAcademia = InferSchemaType<typeof AcademySchema>;
