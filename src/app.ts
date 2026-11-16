@@ -1,251 +1,278 @@
 
 import express from "express";
 import type { Request, Response } from "express";
-import Aluno from "./models/Aluno.js";
 import Academia from "./models/academia.js";
 
 const app = express();
 
 app.use(express.json());
 
+// Campos permitidos para cadastro e atualização
+const camposAcademia = [
+    "name",
+    "plans",
+    "createdAt",
+    "activities",
+    "phone",
+    "description",
+    "cnpj",
+    "email",
+    "address",
+    "openingHours",
+    "isActive",
+    "modalities",
+    "capacity"
+] as const;
+
 // GET - página inicial
 app.get("/", (req: Request, res: Response) => {
-    return res.status(200).send("MovePlus funcionando!!");
-});
-
-// GET - listar todos os alunos
-app.get("/alunos", async (req: Request, res: Response) => {
-    try {
-        const alunos = await Aluno.find().sort({ id: 1 });
-        return res.status(200).json(alunos);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao buscar alunos" });
-    }
-});
-
-// GET - buscar aluno pelo ID
-app.get("/alunos/:id", async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ mensagem: "ID inválido" });
-    }
-
-    try {
-        const aluno = await Aluno.findOne({ id });
-
-        if (!aluno) {
-            return res.status(404).json({ mensagem: "Aluno não encontrado" });
-        }
-
-        return res.status(200).json(aluno);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao buscar aluno" });
-    }
-});
-
-// POST - cadastrar aluno
-app.post("/alunos", async (req: Request, res: Response) => {
-    const { id, name } = req.body;
-
-    if (id === undefined || typeof name !== "string" || !name.trim()) {
-        return res.status(400).json({
-            mensagem: "ID e nome são obrigatórios"
-        });
-    }
-
-    const idNumerico = Number(id);
-
-    if (!Number.isInteger(idNumerico) || idNumerico <= 0) {
-        return res.status(400).json({ mensagem: "ID inválido" });
-    }
-
-    try {
-        const existente = await Aluno.findOne({ id: idNumerico });
-
-        if (existente) {
-            return res.status(409).json({
-                mensagem: "Já existe um aluno com esse ID"
-            });
-        }
-
-        const novoAluno = await Aluno.create({
-            id: idNumerico,
-            name: name.trim()
-        });
-
-        return res.status(201).json({
-            mensagem: "Aluno cadastrado com sucesso",
-            aluno: novoAluno
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            mensagem: "Erro ao cadastrar aluno"
-        });
-    }
-});
-
-// PUT - atualizar aluno completamente
-app.put("/alunos/:id", async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-    const { name } = req.body;
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ mensagem: "ID inválido" });
-    }
-
-    if (typeof name !== "string" || !name.trim()) {
-        return res.status(400).json({
-            mensagem: "O campo name é obrigatório"
-        });
-    }
-
-    try {
-        const aluno = await Aluno.findOneAndUpdate(
-            { id },
-            { name: name.trim() },
-            { new: true, runValidators: true }
-        );
-
-        if (!aluno) {
-            return res.status(404).json({ mensagem: "Aluno não encontrado" });
-        }
-
-        return res.status(200).json({
-            mensagem: "Aluno atualizado completamente",
-            aluno
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            mensagem: "Erro ao atualizar aluno"
-        });
-    }
-});
-
-// PATCH - atualizar aluno parcialmente
-app.patch("/alunos/:id", async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-    const { name } = req.body;
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ mensagem: "ID inválido" });
-    }
-
-    if (typeof name !== "string" || !name.trim()) {
-        return res.status(400).json({
-            mensagem: "Informe um nome válido"
-        });
-    }
-
-    try {
-        const aluno = await Aluno.findOneAndUpdate(
-            { id },
-            { name: name.trim() },
-            { new: true, runValidators: true }
-        );
-
-        if (!aluno) {
-            return res.status(404).json({ mensagem: "Aluno não encontrado" });
-        }
-
-        return res.status(200).json({
-            mensagem: "Aluno atualizado parcialmente",
-            aluno
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            mensagem: "Erro ao atualizar aluno"
-        });
-    }
-});
-
-// DELETE - excluir aluno
-app.delete("/alunos/:id", async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ mensagem: "ID inválido" });
-    }
-
-    try {
-        const alunoExcluido = await Aluno.findOneAndDelete({ id });
-
-        if (!alunoExcluido) {
-            return res.status(404).json({ mensagem: "Aluno não encontrado" });
-        }
-
-        return res.status(200).json({
-            mensagem: "Aluno excluído com sucesso",
-            aluno: alunoExcluido
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            mensagem: "Erro ao excluir aluno"
-        });
-    }
+    return res.status(200).send("MovePlus funcionando!");
 });
 
 // GET - listar todas as academias
 app.get("/academias", async (req: Request, res: Response) => {
     try {
-        const academias = await Academia.find().sort({ id: 1 });
+        const academias = await Academia.find();
+
         return res.status(200).json(academias);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao buscar academias" });
+
+        return res.status(500).json({
+            mensagem: "Erro ao consultar academias."
+        });
     }
 });
 
 // GET - buscar academia pelo ID
 app.get("/academias/:id", async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ mensagem: "ID inválido" });
-    }
-
     try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                mensagem: "ID inválido."
+            });
+        }
+
         const academia = await Academia.findOne({ id });
 
         if (!academia) {
-            return res.status(404).json({ mensagem: "Academia não encontrada" });
+            return res.status(404).json({
+                mensagem: "Academia não encontrada."
+            });
         }
 
         return res.status(200).json(academia);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ mensagem: "erro ao buscar academia" });
+
+        return res.status(500).json({
+            mensagem: "Erro ao buscar academia."
+        });
     }
 });
 
 // POST - cadastrar academia
 app.post("/academias", async (req: Request, res: Response) => {
-    const { id, name, plans, createdAt, activities, phone, description, cnpj, email, address, openingHours, isActive, modalities, capacity } = req.body;
-
     try {
-        const existente = await Academia.findOne({ id });
+        const dados = req.body;
 
-        if (existente) {
-            return res.status(409).json({ mensagem: "Já existe uma academia com esse ID" });
+        if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
+            return res.status(400).json({
+                mensagem: "Envie os dados da academia em formato JSON."
+            });
         }
 
+        const camposObrigatorios = [
+            "name",
+            "plans",
+            "activities",
+            "phone",
+            "description",
+            "cnpj",
+            "email",
+            "address",
+            "openingHours",
+            "isActive",
+            "modalities",
+            "capacity"
+        ];
+
+        for (const campo of camposObrigatorios) {
+            if (dados[campo] === undefined || dados[campo] === null) {
+                return res.status(400).json({
+                    mensagem: `O campo ${campo} é obrigatório.`
+                });
+            }
+        }
+
+        const ultimoRegistro = await Academia.findOne().sort({ id: -1 });
+        const novoId = ultimoRegistro ? ultimoRegistro.id + 1 : 1;
+
         const novaAcademia = await Academia.create({
-            id, name, plans, createdAt, activities, phone, description, cnpj, email, address, openingHours, isActive, modalities, capacity
+            ...dados,
+            id: novoId
         });
 
         return res.status(201).json({
-            mensagem: "Academia cadastrada com sucesso",
+            mensagem: "Academia cadastrada com sucesso!",
             academia: novaAcademia
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ mensagem: "Erro ao cadastrar academia" });
+
+        return res.status(500).json({
+            mensagem: "Erro ao cadastrar academia."
+        });
+    }
+});
+
+// PUT - atualizar todos os dados da academia
+app.put("/academias/:id", async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                mensagem: "ID inválido."
+            });
+        }
+
+        const dados = req.body;
+
+        if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
+            return res.status(400).json({
+                mensagem: "Envie os dados em formato JSON."
+            });
+        }
+
+        for (const campo of camposAcademia) {
+            if (dados[campo] === undefined || dados[campo] === null) {
+                return res.status(400).json({
+                    mensagem: `O campo ${campo} é obrigatório para atualização completa.`
+                });
+            }
+        }
+
+        const atualizacao: Record<string, unknown> = {};
+
+        for (const campo of camposAcademia) {
+            atualizacao[campo] = dados[campo];
+        }
+
+        const academiaAtualizada = await Academia.findOneAndUpdate(
+            { id },
+            { $set: atualizacao },
+            { new: true, runValidators: true }
+        );
+
+        if (!academiaAtualizada) {
+            return res.status(404).json({
+                mensagem: "Academia não encontrada."
+            });
+        }
+
+        return res.status(200).json({
+            mensagem: "Academia atualizada com sucesso!",
+            academia: academiaAtualizada
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            mensagem: "Erro ao atualizar academia."
+        });
+    }
+});
+
+// PATCH - atualizar parcialmente a academia
+app.patch("/academias/:id", async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                mensagem: "ID inválido."
+            });
+        }
+
+        const dados = req.body;
+
+        if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
+            return res.status(400).json({
+                mensagem: "Envie os dados em formato JSON."
+            });
+        }
+
+        const atualizacao: Record<string, unknown> = {};
+
+        for (const campo of camposAcademia) {
+            if (dados[campo] !== undefined) {
+                atualizacao[campo] = dados[campo];
+            }
+        }
+
+        if (Object.keys(atualizacao).length === 0) {
+            return res.status(400).json({
+                mensagem: "Informe pelo menos um campo válido para atualizar."
+            });
+        }
+
+        const academiaAtualizada = await Academia.findOneAndUpdate(
+            { id },
+            { $set: atualizacao },
+            { new: true, runValidators: true }
+        );
+
+        if (!academiaAtualizada) {
+            return res.status(404).json({
+                mensagem: "Academia não encontrada."
+            });
+        }
+
+        return res.status(200).json({
+            mensagem: "Academia atualizada parcialmente!",
+            academia: academiaAtualizada
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            mensagem: "Erro ao atualizar academia."
+        });
+    }
+});
+
+// DELETE - excluir academia
+app.delete("/academias/:id", async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                mensagem: "ID inválido."
+            });
+        }
+
+        const academiaExcluida = await Academia.findOneAndDelete({ id });
+
+        if (!academiaExcluida) {
+            return res.status(404).json({
+                mensagem: "Academia não encontrada."
+            });
+        }
+
+        return res.status(200).json({
+            mensagem: "Academia excluída com sucesso!",
+            academia: academiaExcluida
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            mensagem: "Erro ao excluir academia."
+        });
     }
 });
 

@@ -1,16 +1,29 @@
-
 import "dotenv/config";
+import mongoose from "mongoose";
 import app from "./app.js";
-import conectarBanco from "./config/database.js";
 
-const porta = process.env.PORT || 3000;
+const porta = Number(process.env.PORT) || 3000;
 
-const iniciarServidor = async () => {
-  await conectarBanco();
+async function iniciarServidor() {
+    try {
+        const mongoURI = process.env.MONGODB_URI;
 
-  app.listen(porta, () => {
-    console.log(`Servidor em execução na porta ${porta}`);
-  });
-};
+        if (!mongoURI) {
+            throw new Error("MONGODB_URI não encontrada no arquivo .env");
+        }
+
+        await mongoose.connect(mongoURI);
+        
+        console.log("MongoDB conectado com sucesso!");
+
+        app.listen(porta, () => {
+            console.log(`Servidor em execução na porta ${porta}`);
+        });
+        return mongoose.connection;
+    } catch (error) {
+        console.error("Erro ao iniciar o servidor:", error);
+        process.exit(1);
+    }
+}
 
 iniciarServidor();
