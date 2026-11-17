@@ -1,29 +1,40 @@
+
 import "dotenv/config";
 import mongoose from "mongoose";
 import app from "./app.js";
+import Aluno from "./models/alunos.js";
 
-const porta = Number(process.env.PORT) || 3000;
+const porta = process.env.PORT || 3000;
 
-async function iniciarServidor() {
-    try {
-        const mongoURI = process.env.MONGODB_URI;
+// ALUNOS INICIAIS
+const alunosIniciais = [
+    { id: 1, name: "Lucas Santos" },
+    { id: 2, name: "Mariana Oliveira" },
+    { id: 3, name: "Pedro Henrique" },
+    { id: 4, name: "Ana Clara" }
+];
 
-        if (!mongoURI) {
-            throw new Error("MONGODB_URI não encontrada no arquivo .env");
-        }
-
-        await mongoose.connect(mongoURI);
-        
+// CONEXÃO COM O BANCO DE DADOS
+mongoose.connect(process.env.MONGODB_URI!)
+    .then(async () => {
         console.log("MongoDB conectado com sucesso!");
 
+        // CADASTRO DOS ALUNOS INICIAIS
+        for (const aluno of alunosIniciais) {
+            await Aluno.updateOne(
+                { id: aluno.id },
+                { $setOnInsert: aluno },
+                { upsert: true }
+            );
+        }
+
+        console.log("Alunos iniciais verificados!");
+
+        // INICIALIZAÇÃO DO SERVIDOR
         app.listen(porta, () => {
             console.log(`Servidor em execução na porta ${porta}`);
         });
-        return mongoose.connection;
-    } catch (error) {
-        console.error("Erro ao iniciar o servidor:", error);
-        process.exit(1);
-    }
-}
-
-iniciarServidor();
+    })
+    .catch((erro) => {
+        console.error("Erro ao conectar ao MongoDB:", erro);
+    });

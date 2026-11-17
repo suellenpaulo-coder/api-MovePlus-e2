@@ -1,13 +1,21 @@
 
 import express from "express";
 import type { Request, Response } from "express";
-import Academia from "./models/academia.js";
+import Academia from "./models/academia.ts";
+
+// IMPORTANDO AS ROTAS
+import alunosRoutes from "./routes/alunosRoutes.js";
+import exerciciosRoutes from "./routes/exerciciosRoutes.js";
 
 const app = express();
 
 app.use(express.json());
 
-// Campos permitidos para cadastro e atualização
+// CONECTANDO AS ROTAS DE ALUNOS E EXERCÍCIOS
+app.use("/alunos", alunosRoutes);
+app.use("/exercicios", exerciciosRoutes);
+
+// CAMPOS PERMITIDOS PARA CADASTRO E ATUALIZAÇÃO
 const camposAcademia = [
     "name",
     "plans",
@@ -24,12 +32,12 @@ const camposAcademia = [
     "capacity"
 ] as const;
 
-// GET - página inicial
+// GET - PÁGINA INICIAL
 app.get("/", (req: Request, res: Response) => {
     return res.status(200).send("MovePlus funcionando!");
 });
 
-// GET - listar todas as academias
+// GET - LISTAR TODAS AS ACADEMIAS
 app.get("/academias", async (req: Request, res: Response) => {
     try {
         const academias = await Academia.find();
@@ -44,7 +52,7 @@ app.get("/academias", async (req: Request, res: Response) => {
     }
 });
 
-// GET - buscar academia pelo ID
+// GET - BUSCAR ACADEMIA PELO ID
 app.get("/academias/:id", async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
@@ -73,7 +81,7 @@ app.get("/academias/:id", async (req: Request, res: Response) => {
     }
 });
 
-// POST - cadastrar academia
+// POST - CADASTRAR ACADEMIA
 app.post("/academias", async (req: Request, res: Response) => {
     try {
         const dados = req.body;
@@ -128,7 +136,7 @@ app.post("/academias", async (req: Request, res: Response) => {
     }
 });
 
-// PUT - atualizar todos os dados da academia
+// PUT - ATUALIZAR TODOS OS DADOS DA ACADEMIA
 app.put("/academias/:id", async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
@@ -186,7 +194,7 @@ app.put("/academias/:id", async (req: Request, res: Response) => {
     }
 });
 
-// PATCH - atualizar parcialmente a academia
+// PATCH - ATUALIZAR PARCIALMENTE A ACADEMIA
 app.patch("/academias/:id", async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
@@ -244,7 +252,7 @@ app.patch("/academias/:id", async (req: Request, res: Response) => {
     }
 });
 
-// DELETE - excluir academia
+// DELETE - EXCLUIR ACADEMIA
 app.delete("/academias/:id", async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
