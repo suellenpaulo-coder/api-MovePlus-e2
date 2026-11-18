@@ -1,3 +1,4 @@
+
 import "dotenv/config";
 import mongoose from "mongoose";
 import app from "./app.js";
@@ -13,12 +14,13 @@ async function iniciarServidor() {
         }
 
         await mongoose.connect(mongoURI);
-        
+
         console.log("MongoDB conectado com sucesso!");
 
         app.listen(porta, () => {
             console.log(`Servidor em execução na porta ${porta}`);
         });
+
         return mongoose.connection;
     } catch (error) {
         console.error("Erro ao iniciar o servidor:", error);
