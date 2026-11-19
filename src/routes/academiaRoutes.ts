@@ -1,5 +1,5 @@
 import { Router } from "express";
-import AcademiaController from "../controllers/academiaControllers.ts";
+import AcademiaController from "../controllers/academiaControllers.js";
 
 const router = Router();
 

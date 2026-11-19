@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import Exercicio from "../models/exercicios.ts";
+import Exercicio from "../models/exercicios.js";
 import Aluno from "../models/alunos.js";
 
 class ExerciciosController {

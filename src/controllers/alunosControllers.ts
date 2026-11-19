@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import Aluno from "../models/alunos.ts";
+import Aluno from "../models/alunos.js";
 
 class AlunosController {
     // GET - LISTAR TODOS OS ALUNOS
