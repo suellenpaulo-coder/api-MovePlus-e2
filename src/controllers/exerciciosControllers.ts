@@ -1,12 +1,20 @@
+
 import type { Request, Response } from "express";
-import Exercicio from "../models/exercicios.js";
 import Aluno from "../models/alunos.js";
+import MongoExercicioRepository from "../repositories/MongoExercicioRepository.js";
+
+import type {
+    ExercicioDTO
+} from "../repositories/IExercicioRepository.js";
 
 class ExerciciosController {
+
+    private static repository = new MongoExercicioRepository();
+
     // GET - LISTAR TODOS OS EXERCÍCIOS
     static async listar(req: Request, res: Response) {
         try {
-            const listaExercicios = await Exercicio.find({});
+            const listaExercicios = await this.repository.listar();
 
             return res.status(200).json(listaExercicios);
         } catch (error) {
@@ -21,6 +29,12 @@ class ExerciciosController {
         try {
             const { alunoId } = req.params;
 
+            if (typeof alunoId !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID do aluno inválido"
+                });
+            }
+
             const aluno = await Aluno.findOne({
                 id: Number(alunoId)
             });
@@ -31,7 +45,7 @@ class ExerciciosController {
                 });
             }
 
-            const exercicios = await Exercicio.find({
+            const exercicios = await this.repository.buscarPorFiltro({
                 alunoId: Number(alunoId)
             });
 
@@ -43,14 +57,18 @@ class ExerciciosController {
         }
     }
 
-    // GET - BUSCAR UM EXERCÍCIO PELO ID
+    // GET - BUSCAR EXERCÍCIO PELO ID
     static async buscar(req: Request, res: Response) {
         try {
             const { id } = req.params;
 
-            const exercicio = await Exercicio.findOne({
-                id: Number(id)
-            });
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID do exercício inválido"
+                });
+            }
+
+            const exercicio = await this.repository.buscarPorId(id);
 
             if (!exercicio) {
                 return res.status(404).json({
@@ -91,19 +109,23 @@ class ExerciciosController {
                 });
             }
 
-            const novoExercicio = await Exercicio.create({
-                id,
-                alunoId,
+            const dados: ExercicioDTO = {
+                id: Number(id),
+                alunoId: Number(alunoId),
                 name,
                 muscleGroup,
-                date,
-                sets,
-                repetitions,
-                weight,
-                notes
-            });
+                date: date ? new Date(date) : new Date(),
+                sets: Number(sets),
+                repetitions: Number(repetitions),
+                ...(weight !== undefined && weight !== null
+                    ? { weight: Number(weight) }
+                    : {}),
+                ...(notes !== undefined ? { notes } : {})
+            };
 
-            return res.status(201).json(novoExercicio);
+            const novoExercicio = await this.repository.cadastrar(dados);
+
+            return res.status(201).json(novoExercicio[0]);
         } catch (error) {
             return res.status(400).json({
                 mensagem: "Erro ao registrar exercício"
@@ -115,8 +137,13 @@ class ExerciciosController {
     static async atualizar(req: Request, res: Response) {
         try {
             const { id } = req.params;
-
             const dados = req.body;
+
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID do exercício inválido"
+                });
+            }
 
             if (
                 !dados.alunoId ||
@@ -140,19 +167,34 @@ class ExerciciosController {
                 });
             }
 
-            const exercicio = await Exercicio.findOneAndUpdate(
-                { id: Number(id) },
-                { $set: dados },
-                { new: true, runValidators: true }
+            const exercicioDados: ExercicioDTO = {
+                id: Number(id),
+                alunoId: Number(dados.alunoId),
+                name: dados.name,
+                muscleGroup: dados.muscleGroup,
+                date: dados.date ? new Date(dados.date) : new Date(),
+                sets: Number(dados.sets),
+                repetitions: Number(dados.repetitions),
+                ...(dados.weight !== undefined && dados.weight !== null
+                    ? { weight: Number(dados.weight) }
+                    : {}),
+                ...(dados.notes !== undefined
+                    ? { notes: dados.notes }
+                    : {})
+            };
+
+            const exercicio = await this.repository.atualizar(
+                id,
+                exercicioDados
             );
 
-            if (!exercicio) {
+            if (exercicio.length === 0) {
                 return res.status(404).json({
                     mensagem: "Exercício não encontrado"
                 });
             }
 
-            return res.status(200).json(exercicio);
+            return res.status(200).json(exercicio[0]);
         } catch (error) {
             return res.status(400).json({
                 mensagem: "Erro ao atualizar exercício"
@@ -160,11 +202,20 @@ class ExerciciosController {
         }
     }
 
-    // PATCH - ATUALIZAR PARCIALMENTE UM EXERCÍCIO
-    static async atualizarParcialmente(req: Request, res: Response) {
+    // PATCH - ATUALIZAR EXERCÍCIO PARCIALMENTE
+    static async atualizarParcialmente(
+        req: Request,
+        res: Response
+    ) {
         try {
             const { id } = req.params;
             const dados = req.body;
+
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID do exercício inválido"
+                });
+            }
 
             const camposPermitidos = [
                 "alunoId",
@@ -181,7 +232,7 @@ class ExerciciosController {
                 Object.entries(dados).filter(([campo]) =>
                     camposPermitidos.includes(campo)
                 )
-            );
+            ) as Record<string, unknown>;
 
             if (Object.keys(atualizacoes).length === 0) {
                 return res.status(400).json({
@@ -199,21 +250,38 @@ class ExerciciosController {
                         mensagem: "Aluno não encontrado"
                     });
                 }
+
+                atualizacoes.alunoId = Number(atualizacoes.alunoId);
             }
 
-            const exercicio = await Exercicio.findOneAndUpdate(
-                { id: Number(id) },
-                { $set: atualizacoes },
-                { new: true, runValidators: true }
+            if (atualizacoes.date !== undefined) {
+                atualizacoes.date = new Date(String(atualizacoes.date));
+            }
+
+            if (atualizacoes.sets !== undefined) {
+                atualizacoes.sets = Number(atualizacoes.sets);
+            }
+
+            if (atualizacoes.repetitions !== undefined) {
+                atualizacoes.repetitions = Number(atualizacoes.repetitions);
+            }
+
+            if (atualizacoes.weight !== undefined) {
+                atualizacoes.weight = Number(atualizacoes.weight);
+            }
+
+            const exercicio = await this.repository.atualizarParcial(
+                id,
+                atualizacoes as Partial<ExercicioDTO>
             );
 
-            if (!exercicio) {
+            if (!exercicio || exercicio.length === 0) {
                 return res.status(404).json({
                     mensagem: "Exercício não encontrado"
                 });
             }
 
-            return res.status(200).json(exercicio);
+            return res.status(200).json(exercicio[0]);
         } catch (error) {
             return res.status(400).json({
                 mensagem: "Erro ao atualizar exercício"
@@ -226,11 +294,15 @@ class ExerciciosController {
         try {
             const { id } = req.params;
 
-            const exercicio = await Exercicio.findOneAndDelete({
-                id: Number(id)
-            });
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID do exercício inválido"
+                });
+            }
 
-            if (!exercicio) {
+            const deletado = await this.repository.deletar(id);
+
+            if (!deletado) {
                 return res.status(404).json({
                     mensagem: "Exercício não encontrado"
                 });

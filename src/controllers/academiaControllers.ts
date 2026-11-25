@@ -1,8 +1,12 @@
 
 import type { Request, Response } from "express";
-import Academia from "../models/academia.js";
 
-// CAMPOS PERMITIDOS PARA CADASTRO E ATUALIZAÇÃO
+import MongoAcademiaRepository from "../repositories/MongoAcademiaRepository.js";
+
+import type {
+    AcademiaDTO
+} from "../repositories/IAcademiaRepository.js";
+
 const camposAcademia = [
     "name",
     "plans",
@@ -20,10 +24,12 @@ const camposAcademia = [
 
 class AcademiaController {
 
+    private static repository = new MongoAcademiaRepository();
+
     // GET - LISTAR TODAS AS ACADEMIAS
     static async listar(req: Request, res: Response) {
         try {
-            const academias = await Academia.find();
+            const academias = await this.repository.listar();
 
             return res.status(200).json(academias);
         } catch (error) {
@@ -38,15 +44,20 @@ class AcademiaController {
     // GET - BUSCAR ACADEMIA PELO ID
     static async buscar(req: Request, res: Response) {
         try {
-            const id = Number(req.params.id);
+            const { id } = req.params;
+            const numeroId = Number(id);
 
-            if (!Number.isInteger(id) || id <= 0) {
+            if (
+                typeof id !== "string" ||
+                !Number.isInteger(numeroId) ||
+                numeroId <= 0
+            ) {
                 return res.status(400).json({
                     mensagem: "ID inválido."
                 });
             }
 
-            const academia = await Academia.findOne({ id });
+            const academia = await this.repository.buscarPorId(id);
 
             if (!academia) {
                 return res.status(404).json({
@@ -75,20 +86,7 @@ class AcademiaController {
                 });
             }
 
-            const camposObrigatorios = [
-                "name",
-                "plans",
-                "activities",
-                "phone",
-                "description",
-                "cnpj",
-                "email",
-                "address",
-                "openingHours",
-                "isActive",
-                "modalities",
-                "capacity"
-            ];
+            const camposObrigatorios = camposAcademia;
 
             for (const campo of camposObrigatorios) {
                 if (dados[campo] === undefined || dados[campo] === null) {
@@ -98,23 +96,33 @@ class AcademiaController {
                 }
             }
 
-            const ultimoRegistro = await Academia.findOne().sort({ id: -1 });
-            const novoId = ultimoRegistro ? ultimoRegistro.id + 1 : 1;
+            const academias = await this.repository.listar();
+
+            const maiorId = academias.reduce(
+                (maior, academia) => Math.max(maior, academia.id),
+                0
+            );
+
+            const novoId = maiorId + 1;
 
             const dadosPermitidos = Object.fromEntries(
                 Object.entries(dados).filter(([campo]) =>
-                    camposAcademia.includes(campo as typeof camposAcademia[number])
+                    camposAcademia.includes(
+                        campo as typeof camposAcademia[number]
+                    )
                 )
             );
 
-            const novaAcademia = await Academia.create({
+            const novaAcademia: AcademiaDTO = {
                 ...dadosPermitidos,
                 id: novoId
-            });
+            } as AcademiaDTO;
+
+            const resultado = await this.repository.cadastrar(novaAcademia);
 
             return res.status(201).json({
                 mensagem: "Academia cadastrada com sucesso!",
-                academia: novaAcademia
+                academia: resultado[0]
             });
         } catch (error) {
             console.error(error);
@@ -128,9 +136,14 @@ class AcademiaController {
     // PUT - ATUALIZAR TODOS OS DADOS DA ACADEMIA
     static async atualizar(req: Request, res: Response) {
         try {
-            const id = Number(req.params.id);
+            const { id } = req.params;
+            const numeroId = Number(id);
 
-            if (!Number.isInteger(id) || id <= 0) {
+            if (
+                typeof id !== "string" ||
+                !Number.isInteger(numeroId) ||
+                numeroId <= 0
+            ) {
                 return res.status(400).json({
                     mensagem: "ID inválido."
                 });
@@ -156,13 +169,17 @@ class AcademiaController {
                 camposAcademia.map(campo => [campo, dados[campo]])
             );
 
-            const academiaAtualizada = await Academia.findOneAndUpdate(
-                { id },
-                { $set: atualizacao },
-                { new: true, runValidators: true }
+            const dadosAtualizados: AcademiaDTO = {
+                ...atualizacao,
+                id: numeroId
+            } as AcademiaDTO;
+
+            const resultado = await this.repository.atualizar(
+                id,
+                dadosAtualizados
             );
 
-            if (!academiaAtualizada) {
+            if (resultado.length === 0) {
                 return res.status(404).json({
                     mensagem: "Academia não encontrada."
                 });
@@ -170,7 +187,7 @@ class AcademiaController {
 
             return res.status(200).json({
                 mensagem: "Academia atualizada com sucesso!",
-                academia: academiaAtualizada
+                academia: resultado[0]
             });
         } catch (error) {
             console.error(error);
@@ -184,9 +201,14 @@ class AcademiaController {
     // PATCH - ATUALIZAR PARCIALMENTE A ACADEMIA
     static async atualizarParcialmente(req: Request, res: Response) {
         try {
-            const id = Number(req.params.id);
+            const { id } = req.params;
+            const numeroId = Number(id);
 
-            if (!Number.isInteger(id) || id <= 0) {
+            if (
+                typeof id !== "string" ||
+                !Number.isInteger(numeroId) ||
+                numeroId <= 0
+            ) {
                 return res.status(400).json({
                     mensagem: "ID inválido."
                 });
@@ -202,9 +224,11 @@ class AcademiaController {
 
             const atualizacao = Object.fromEntries(
                 Object.entries(dados).filter(([campo]) =>
-                    camposAcademia.includes(campo as typeof camposAcademia[number])
+                    camposAcademia.includes(
+                        campo as typeof camposAcademia[number]
+                    )
                 )
-            );
+            ) as Partial<AcademiaDTO>;
 
             if (Object.keys(atualizacao).length === 0) {
                 return res.status(400).json({
@@ -212,13 +236,10 @@ class AcademiaController {
                 });
             }
 
-            const academiaAtualizada = await Academia.findOneAndUpdate(
-                { id },
-                { $set: atualizacao },
-                { new: true, runValidators: true }
-            );
+            const academiaAtualizada =
+                await this.repository.atualizarParcial(id, atualizacao);
 
-            if (!academiaAtualizada) {
+            if (!academiaAtualizada || academiaAtualizada.length === 0) {
                 return res.status(404).json({
                     mensagem: "Academia não encontrada."
                 });
@@ -226,7 +247,7 @@ class AcademiaController {
 
             return res.status(200).json({
                 mensagem: "Academia atualizada parcialmente!",
-                academia: academiaAtualizada
+                academia: academiaAtualizada[0]
             });
         } catch (error) {
             console.error(error);
@@ -240,25 +261,29 @@ class AcademiaController {
     // DELETE - EXCLUIR ACADEMIA
     static async deletar(req: Request, res: Response) {
         try {
-            const id = Number(req.params.id);
+            const { id } = req.params;
+            const numeroId = Number(id);
 
-            if (!Number.isInteger(id) || id <= 0) {
+            if (
+                typeof id !== "string" ||
+                !Number.isInteger(numeroId) ||
+                numeroId <= 0
+            ) {
                 return res.status(400).json({
                     mensagem: "ID inválido."
                 });
             }
 
-            const academiaExcluida = await Academia.findOneAndDelete({ id });
+            const excluida = await this.repository.deletar(id);
 
-            if (!academiaExcluida) {
+            if (!excluida) {
                 return res.status(404).json({
                     mensagem: "Academia não encontrada."
                 });
             }
 
             return res.status(200).json({
-                mensagem: "Academia excluída com sucesso!",
-                academia: academiaExcluida
+                mensagem: "Academia excluída com sucesso!"
             });
         } catch (error) {
             console.error(error);
