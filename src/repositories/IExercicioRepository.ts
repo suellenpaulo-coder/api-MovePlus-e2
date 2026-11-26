@@ -18,14 +18,14 @@ export interface FiltroExercicioDTO {
 }
 
 export interface IExercicioRepository {
-    listar(): Promise<any[]>;
-    buscarPorId(id: string): Promise<any | null>;
-    buscarPorFiltro(filtros: FiltroExercicioDTO): Promise<any[]>;
+    listar(): Promise<ExercicioDTO[]>;
+    buscarPorId(id: string): Promise<ExercicioDTO | null>;
+    buscarPorFiltro(filtros: FiltroExercicioDTO): Promise<ExercicioDTO[]>;
     cadastrar(dados: ExercicioDTO): Promise<any[]>;
-    atualizar(id: string, dados: ExercicioDTO): Promise<any[]>;
+    atualizar(id: string, dados: ExercicioDTO): Promise<ExercicioDTO[]>;
     atualizarParcial(
         id: string,
         dados: Partial<ExercicioDTO>
-    ): Promise<any[] | null>;
+    ): Promise<ExercicioDTO[] | null>;
     deletar(id: string): Promise<boolean>;
 }

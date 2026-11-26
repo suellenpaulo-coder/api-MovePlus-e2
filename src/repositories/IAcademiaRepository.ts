@@ -24,14 +24,14 @@ export interface FiltroAcademiaDTO {
 }
 
 export interface IAcademiaRepository {
-    listar(): Promise<any[]>;
-    buscarPorId(id: string): Promise<any | null>;
-    buscarPorFiltro(filtros: FiltroAcademiaDTO): Promise<any[]>;
-    cadastrar(dados: AcademiaDTO): Promise<any[]>;
-    atualizar(id: string, dados: AcademiaDTO): Promise<any[]>;
+    listar(): Promise<AcademiaDTO[]>;
+    buscarPorId(id: string): Promise<AcademiaDTO | null>;
+    buscarPorFiltro(filtros: FiltroAcademiaDTO): Promise<AcademiaDTO[]>;
+    cadastrar(dados: AcademiaDTO): Promise<AcademiaDTO[]>;
+    atualizar(id: string, dados: AcademiaDTO): Promise<AcademiaDTO[]>;
     atualizarParcial(
         id: string,
         dados: Partial<AcademiaDTO>
-    ): Promise<any[] | null>;
+    ): Promise<AcademiaDTO[] | null>;
     deletar(id: string): Promise<boolean>;
 }

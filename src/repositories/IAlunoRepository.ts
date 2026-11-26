@@ -10,14 +10,14 @@ export interface FiltroAlunoDTO {
 }
 
 export interface IAlunoRepository {
-    listar(): Promise<any[]>;
-    buscarPorId(id: string): Promise<any | null>;
-    buscarPorFiltro(filtros: FiltroAlunoDTO): Promise<any[]>;
-    cadastrar(dados: AlunoDTO): Promise<any[]>;
-    atualizar(id: string, dados: AlunoDTO): Promise<any[]>;
+    listar(): Promise<AlunoDTO[]>;
+    buscarPorId(id: string): Promise<AlunoDTO | null>;
+    buscarPorFiltro(filtros: FiltroAlunoDTO): Promise<AlunoDTO[]>;
+    cadastrar(dados: AlunoDTO): Promise<AlunoDTO[]>;
+    atualizar(id: string, dados: AlunoDTO): Promise<AlunoDTO[]>;
     atualizarParcial(
         id: string,
         dados: Partial<AlunoDTO>
-    ): Promise<any[] | null>;
+    ): Promise<AlunoDTO[] | null>;
     deletar(id: string): Promise<boolean>;
 }
