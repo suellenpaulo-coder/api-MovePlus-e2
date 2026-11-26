@@ -8,15 +8,17 @@ datasource db {
   provider = "postgresql"
 }
 
+
 model Exercicio {
-  id            String   @id @default(uuid())
-  nome          String
-  descricao     String
-  grupoMuscular String
-  equipamento   String
-  series        Int
-  repeticoes    Int
-  imagem        String   @default("exercicio-padrao.png")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          Int      @id
+  alunoId     Int
+  name        String
+  muscleGroup String
+  date        DateTime @default(now())
+  sets        Int
+  repetitions Int
+  weight      Float?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
