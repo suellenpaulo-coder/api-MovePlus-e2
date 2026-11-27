@@ -9,6 +9,31 @@ datasource db {
 }
 
 
+model Academia {
+  id           Int      @id
+  name         String
+  plans        String
+  activities   String
+  phone        String
+  description  String
+  cnpj         String
+  email        String
+  address      String
+  openingHours String
+  isActive     Boolean  @default(true)
+  modalities   String[]
+  capacity     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Aluno {
+  id        Int      @id
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Exercicio {
   id          Int      @id
   alunoId     Int

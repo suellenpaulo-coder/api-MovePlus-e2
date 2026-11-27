@@ -6,10 +6,6 @@ import type { z } from "zod";
 const validarSchema = (schema: z.ZodType): RequestHandler => {
     return (req: Request, res: Response, next: NextFunction) => {
 
-        // VERIFICANDO OS DADOS RECEBIDOS
-        console.log("CONTENT-TYPE:", req.headers["content-type"]);
-        console.log("BODY RECEBIDO:", req.body);
-
         // VALIDANDO OS DADOS COM ZOD
         const resultado = schema.safeParse(req.body);
 

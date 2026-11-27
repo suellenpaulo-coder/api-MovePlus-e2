@@ -1,18 +1,22 @@
 
 import type { Request, Response } from "express";
 import Aluno from "../models/alunos.js";
-import MongoExercicioRepository from "../repositories/MongoExercicioRepository.js";
 
 import type {
-    ExercicioDTO
+    ExercicioDTO,
+    IExercicioRepository
 } from "../repositories/IExercicioRepository.js";
 
 class ExerciciosController {
 
-    private static repository = new MongoExercicioRepository();
+    private repository: IExercicioRepository;
+
+    constructor(repository: IExercicioRepository) {
+        this.repository = repository;
+    }
 
     // GET - LISTAR TODOS OS EXERCÍCIOS
-    static async listar(req: Request, res: Response) {
+    listar = async (req: Request, res: Response) => {
         try {
             const listaExercicios = await this.repository.listar();
 
@@ -25,7 +29,7 @@ class ExerciciosController {
     }
 
     // GET - LISTAR EXERCÍCIOS DE UM ALUNO
-    static async listarPorAluno(req: Request, res: Response) {
+    listarPorAluno = async (req: Request, res: Response) => {
         try {
             const { alunoId } = req.params;
 
@@ -58,7 +62,7 @@ class ExerciciosController {
     }
 
     // GET - BUSCAR EXERCÍCIO PELO ID
-    static async buscar(req: Request, res: Response) {
+    buscar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
 
@@ -85,7 +89,7 @@ class ExerciciosController {
     }
 
     // POST - REGISTRAR EXERCÍCIO
-    static async cadastrar(req: Request, res: Response) {
+    cadastrar = async (req: Request, res: Response) => {
         try {
             const {
                 id,
@@ -134,7 +138,7 @@ class ExerciciosController {
     }
 
     // PUT - ATUALIZAR EXERCÍCIO COMPLETAMENTE
-    static async atualizar(req: Request, res: Response) {
+    atualizar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const dados = req.body;
@@ -203,10 +207,10 @@ class ExerciciosController {
     }
 
     // PATCH - ATUALIZAR EXERCÍCIO PARCIALMENTE
-    static async atualizarParcialmente(
+    atualizarParcialmente = async (
         req: Request,
         res: Response
-    ) {
+    ) => {
         try {
             const { id } = req.params;
             const dados = req.body;
@@ -290,7 +294,7 @@ class ExerciciosController {
     }
 
     // DELETE - DELETAR EXERCÍCIO
-    static async deletar(req: Request, res: Response) {
+    deletar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
 

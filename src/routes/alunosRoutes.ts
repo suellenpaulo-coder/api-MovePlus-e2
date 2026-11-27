@@ -2,6 +2,7 @@
 import { Router } from "express";
 import AlunosController from "../controllers/alunosControllers.js";
 import validarSchema from "../middlewares/validarSchema.js";
+import { criarAlunoRepository } from "../repositories/RepositoryFactory.js";
 import {
     alunoSchema,
     alunoAtualizacaoSchema
@@ -9,47 +10,32 @@ import {
 
 const router = Router();
 
+const alunosController = new AlunosController(criarAlunoRepository());
+
 // ROTAS DOS ALUNOS
 
-router.get("/", AlunosController.listar);
+router.get("/", alunosController.listar);
 
-router.get("/:id", AlunosController.buscar);
-
+router.get("/:id", alunosController.buscar);
 
 router.post(
     "/",
-    (req, res, next) => {
-        console.log("ROTA POST /alunos FOI ACESSADA");
-        console.log("BODY RECEBIDO:", req.body);
-        next();
-    },
     validarSchema(alunoSchema),
-    AlunosController.cadastrar
+    alunosController.cadastrar
 );
-
 
 router.put(
     "/:id",
-    (req, res, next) => {
-        console.log("ROTA PUT /alunos FOI ACESSADA");
-        console.log("BODY RECEBIDO:", req.body);
-        next();
-    },
     validarSchema(alunoSchema),
-    AlunosController.atualizar
+    alunosController.atualizar
 );
 
 router.patch(
     "/:id",
-    (req, res, next) => {
-        console.log("ROTA PATCH /alunos FOI ACESSADA");
-        console.log("BODY RECEBIDO:", req.body);
-        next();
-    },
     validarSchema(alunoAtualizacaoSchema),
-    AlunosController.atualizarParcialmente
+    alunosController.atualizarParcialmente
 );
 
-router.delete("/:id", AlunosController.deletar);
+router.delete("/:id", alunosController.deletar);
 
 export default router;
