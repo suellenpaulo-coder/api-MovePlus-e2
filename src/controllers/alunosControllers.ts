@@ -1,18 +1,21 @@
 
 import type { Request, Response } from "express";
 
-import MongoAlunoRepository from "../repositories/MongoAlunoRepository.js";
-
 import type {
-    AlunoDTO
+    AlunoDTO,
+    IAlunoRepository
 } from "../repositories/IAlunoRepository.js";
 
 class AlunosController {
 
-    private static repository = new MongoAlunoRepository();
+    private repository: IAlunoRepository;
+
+    constructor(repository: IAlunoRepository) {
+        this.repository = repository;
+    }
 
     // GET - LISTAR TODOS OS ALUNOS
-    static async listar(req: Request, res: Response) {
+    listar = async (req: Request, res: Response) => {
         try {
             const listaAlunos = await this.repository.listar();
 
@@ -25,7 +28,7 @@ class AlunosController {
     }
 
     // GET - BUSCAR UM ÚNICO ALUNO PELO ID
-    static async buscar(req: Request, res: Response) {
+    buscar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
 
@@ -52,7 +55,7 @@ class AlunosController {
     }
 
     // POST - CADASTRAR ALUNO
-    static async cadastrar(req: Request, res: Response) {
+    cadastrar = async (req: Request, res: Response) => {
         try {
             const { id, name } = req.body;
 
@@ -78,7 +81,7 @@ class AlunosController {
     }
 
     // PUT - ATUALIZAR ALUNO COMPLETAMENTE
-    static async atualizar(req: Request, res: Response) {
+    atualizar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const { name } = req.body;
@@ -117,7 +120,7 @@ class AlunosController {
     }
 
     // PATCH - ATUALIZAR PARCIALMENTE UM ALUNO
-    static async atualizarParcialmente(req: Request, res: Response) {
+    atualizarParcialmente = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const { name } = req.body;
@@ -153,7 +156,7 @@ class AlunosController {
     }
 
     // DELETE - DELETAR ALUNO
-    static async deletar(req: Request, res: Response) {
+    deletar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
 

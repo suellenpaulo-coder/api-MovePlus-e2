@@ -2,6 +2,7 @@
 import { Router } from "express";
 import ExerciciosController from "../controllers/exerciciosControllers.js";
 import validarSchema from "../middlewares/validarSchema.js";
+import { criarExercicioRepository } from "../repositories/RepositoryFactory.js";
 import {
     exercicioSchema,
     exercicioAtualizacaoSchema
@@ -9,32 +10,34 @@ import {
 
 const router = Router();
 
+const exerciciosController = new ExerciciosController(criarExercicioRepository());
+
 // ROTAS DOS EXERCÍCIOS
 
-router.get("/", ExerciciosController.listar);
+router.get("/", exerciciosController.listar);
 
-router.get("/aluno/:alunoId", ExerciciosController.listarPorAluno);
+router.get("/aluno/:alunoId", exerciciosController.listarPorAluno);
 
-router.get("/:id", ExerciciosController.buscar);
+router.get("/:id", exerciciosController.buscar);
 
 router.post(
     "/",
     validarSchema(exercicioSchema),
-    ExerciciosController.cadastrar
+    exerciciosController.cadastrar
 );
 
 router.put(
     "/:id",
     validarSchema(exercicioSchema),
-    ExerciciosController.atualizar
+    exerciciosController.atualizar
 );
 
 router.patch(
     "/:id",
     validarSchema(exercicioAtualizacaoSchema),
-    ExerciciosController.atualizarParcialmente
+    exerciciosController.atualizarParcialmente
 );
 
-router.delete("/:id", ExerciciosController.deletar);
+router.delete("/:id", exerciciosController.deletar);
 
 export default router;

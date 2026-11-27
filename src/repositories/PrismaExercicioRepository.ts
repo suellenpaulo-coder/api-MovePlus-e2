@@ -1,12 +1,10 @@
 
-import { PrismaClient } from "../generated/prisma/index.js";
+import prisma from "../config/prismaClient.js";
 import type {
     ExercicioDTO,
     FiltroExercicioDTO,
     IExercicioRepository
 } from "./IExercicioRepository.js";
-
-const prisma = new PrismaClient();
 
 class PrismaExercicioRepository implements IExercicioRepository {
 

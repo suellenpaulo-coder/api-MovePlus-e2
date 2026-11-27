@@ -1,10 +1,9 @@
 
 import type { Request, Response } from "express";
 
-import MongoAcademiaRepository from "../repositories/MongoAcademiaRepository.js";
-
 import type {
-    AcademiaDTO
+    AcademiaDTO,
+    IAcademiaRepository
 } from "../repositories/IAcademiaRepository.js";
 
 const camposAcademia = [
@@ -24,10 +23,14 @@ const camposAcademia = [
 
 class AcademiaController {
 
-    private static repository = new MongoAcademiaRepository();
+    private repository: IAcademiaRepository;
+
+    constructor(repository: IAcademiaRepository) {
+        this.repository = repository;
+    }
 
     // GET - LISTAR TODAS AS ACADEMIAS
-    static async listar(req: Request, res: Response) {
+    listar = async (req: Request, res: Response) => {
         try {
             const academias = await this.repository.listar();
 
@@ -42,7 +45,7 @@ class AcademiaController {
     }
 
     // GET - BUSCAR ACADEMIA PELO ID
-    static async buscar(req: Request, res: Response) {
+    buscar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const numeroId = Number(id);
@@ -76,7 +79,7 @@ class AcademiaController {
     }
 
     // POST - CADASTRAR ACADEMIA
-    static async cadastrar(req: Request, res: Response) {
+    cadastrar = async (req: Request, res: Response) => {
         try {
             const dados = req.body;
 
@@ -134,7 +137,7 @@ class AcademiaController {
     }
 
     // PUT - ATUALIZAR TODOS OS DADOS DA ACADEMIA
-    static async atualizar(req: Request, res: Response) {
+    atualizar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const numeroId = Number(id);
@@ -199,7 +202,7 @@ class AcademiaController {
     }
 
     // PATCH - ATUALIZAR PARCIALMENTE A ACADEMIA
-    static async atualizarParcialmente(req: Request, res: Response) {
+    atualizarParcialmente = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const numeroId = Number(id);
@@ -259,7 +262,7 @@ class AcademiaController {
     }
 
     // DELETE - EXCLUIR ACADEMIA
-    static async deletar(req: Request, res: Response) {
+    deletar = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const numeroId = Number(id);
