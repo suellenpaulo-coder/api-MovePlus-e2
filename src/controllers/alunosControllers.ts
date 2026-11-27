@@ -1,11 +1,20 @@
+
 import type { Request, Response } from "express";
-import Aluno from "../models/alunos.js";
+
+import MongoAlunoRepository from "../repositories/MongoAlunoRepository.js";
+
+import type {
+    AlunoDTO
+} from "../repositories/IAlunoRepository.js";
 
 class AlunosController {
+
+    private static repository = new MongoAlunoRepository();
+
     // GET - LISTAR TODOS OS ALUNOS
     static async listar(req: Request, res: Response) {
         try {
-            const listaAlunos = await Aluno.find({});
+            const listaAlunos = await this.repository.listar();
 
             return res.status(200).json(listaAlunos);
         } catch (error) {
@@ -20,7 +29,13 @@ class AlunosController {
         try {
             const { id } = req.params;
 
-            const aluno = await Aluno.findOne({ id: Number(id) });
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID inválido"
+                });
+            }
+
+            const aluno = await this.repository.buscarPorId(id);
 
             if (!aluno) {
                 return res.status(404).json({
@@ -41,9 +56,20 @@ class AlunosController {
         try {
             const { id, name } = req.body;
 
-            const novoAluno = await Aluno.create({ id, name });
+            if (id === undefined || !name) {
+                return res.status(400).json({
+                    mensagem: "Informe o ID e o nome do aluno"
+                });
+            }
 
-            return res.status(201).json(novoAluno);
+            const dados: AlunoDTO = {
+                id: Number(id),
+                name
+            };
+
+            const novoAluno = await this.repository.cadastrar(dados);
+
+            return res.status(201).json(novoAluno[0]);
         } catch (error) {
             return res.status(400).json({
                 mensagem: "Erro ao cadastrar aluno"
@@ -57,25 +83,32 @@ class AlunosController {
             const { id } = req.params;
             const { name } = req.body;
 
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID inválido"
+                });
+            }
+
             if (!name) {
                 return res.status(400).json({
                     mensagem: "O nome do aluno é obrigatório"
                 });
             }
 
-            const aluno = await Aluno.findOneAndUpdate(
-                { id: Number(id) },
-                { $set: { name } },
-                { new: true, runValidators: true }
-            );
+            const dados: AlunoDTO = {
+                id: Number(id),
+                name
+            };
 
-            if (!aluno) {
+            const aluno = await this.repository.atualizar(id, dados);
+
+            if (aluno.length === 0) {
                 return res.status(404).json({
                     mensagem: "Aluno não encontrado"
                 });
             }
 
-            return res.status(200).json(aluno);
+            return res.status(200).json(aluno[0]);
         } catch (error) {
             return res.status(400).json({
                 mensagem: "Erro ao atualizar aluno"
@@ -89,25 +122,29 @@ class AlunosController {
             const { id } = req.params;
             const { name } = req.body;
 
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID inválido"
+                });
+            }
+
             if (!name) {
                 return res.status(400).json({
                     mensagem: "Informe o nome para atualização"
                 });
             }
 
-            const aluno = await Aluno.findOneAndUpdate(
-                { id: Number(id) },
-                { $set: { name } },
-                { new: true, runValidators: true }
-            );
+            const aluno = await this.repository.atualizarParcial(id, {
+                name
+            });
 
-            if (!aluno) {
+            if (!aluno || aluno.length === 0) {
                 return res.status(404).json({
                     mensagem: "Aluno não encontrado"
                 });
             }
 
-            return res.status(200).json(aluno);
+            return res.status(200).json(aluno[0]);
         } catch (error) {
             return res.status(400).json({
                 mensagem: "Erro ao atualizar aluno"
@@ -120,11 +157,15 @@ class AlunosController {
         try {
             const { id } = req.params;
 
-            const aluno = await Aluno.findOneAndDelete({
-                id: Number(id)
-            });
+            if (typeof id !== "string") {
+                return res.status(400).json({
+                    mensagem: "ID inválido"
+                });
+            }
 
-            if (!aluno) {
+            const deletado = await this.repository.deletar(id);
+
+            if (!deletado) {
                 return res.status(404).json({
                     mensagem: "Aluno não encontrado"
                 });
